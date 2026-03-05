@@ -118,6 +118,15 @@ Several strategies ensure the platform scales efficiently:
 
 ---
 
+### Future Improvements
+Potential enhancements include:
+
+- Content recommendation systems using AI
+- Advanced search indexing
+- Notification systems for engagement updates
+- Role-based access control for multi-author platforms
+
+
 ## Setup Instructions
 
 1. Clone the repository
