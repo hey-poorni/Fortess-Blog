@@ -1,0 +1,16 @@
+{
+  "placeholderImages": [
+    {
+      "id": "hero",
+      "description": "Secure digital vault",
+      "imageUrl": "https://picsum.photos/seed/vault/1200/600",
+      "imageHint": "secure vault"
+    },
+    {
+      "id": "writing",
+      "description": "Clean desk with a notebook",
+      "imageUrl": "https://picsum.photos/seed/write/800/400",
+      "imageHint": "writing desk"
+    }
+  ]
+}

@@ -1,0 +1,55 @@
+rules_version = '2';
+service cloud.firestore {
+  match /databases/{database}/documents {
+
+    // Helper: Is the user signed in?
+    function isSignedIn() {
+      return request.auth != null;
+    }
+
+    // Helper: Check if user owns the master record in private storage
+    // This acts as a source of truth for ownership across public/private spaces
+    function isBlogAuthor(blogId) {
+      return isSignedIn() && exists(/databases/$(database)/documents/users/$(request.auth.uid)/blogs/$(blogId));
+    }
+
+    match /users/{userId} {
+      allow get: if isSignedIn() && request.auth.uid == userId;
+      allow create: if isSignedIn() && request.auth.uid == userId;
+      
+      match /blogs/{blogId} {
+        allow read, write: if isSignedIn() && request.auth.uid == userId;
+      }
+    }
+
+    match /public_blogs/{blogId} {
+      // 1. Public Read
+      allow get, list: if true;
+      
+      // 2. Author Operations
+      allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+      allow delete: if isBlogAuthor(blogId) || (resource.data != null && resource.data.userId == request.auth.uid);
+      
+      // 3. Selective Updates (Likes and Comments)
+      // Allows any signed-in user to update the interaction counts
+      allow update: if isBlogAuthor(blogId) || (resource.data != null && resource.data.userId == request.auth.uid) || (
+        isSignedIn() && 
+        request.resource.data.diff(resource.data).affectedKeys().hasAny(['likeCount', 'commentCount']) &&
+        request.resource.data.diff(resource.data).affectedKeys().hasOnly(['likeCount', 'commentCount'])
+      );
+
+      match /comments/{commentId} {
+        allow read: if true;
+        allow create: if isSignedIn() && request.resource.data.userId == request.auth.uid;
+        allow delete: if isSignedIn() && (resource.data.userId == request.auth.uid || isBlogAuthor(blogId));
+      }
+
+      match /likes/{likerId} {
+        allow read: if true;
+        // Constraint: One user per post using their UID as the doc ID
+        allow create: if isSignedIn() && likerId == request.auth.uid;
+        allow delete: if isSignedIn() && likerId == request.auth.uid;
+      }
+    }
+  }
+}

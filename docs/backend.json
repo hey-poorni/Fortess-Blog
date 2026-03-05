@@ -1,0 +1,67 @@
+{
+  "entities": {
+    "User": {
+      "title": "User",
+      "type": "object",
+      "description": "User profile managed by Firebase Auth.",
+      "properties": {
+        "id": { "type": "string", "description": "UID from Auth" },
+        "email": { "type": "string", "unique": true },
+        "createdAt": { "type": "string", "format": "date-time" }
+      },
+      "required": ["id", "email", "createdAt"]
+    },
+    "Blog": {
+      "title": "Blog",
+      "type": "object",
+      "description": "Blog post entity. Private in /users/{uid}/blogs, Public in /public_blogs.",
+      "properties": {
+        "id": { "type": "string" },
+        "userId": { "type": "string", "relation": "User" },
+        "authorEmail": { "type": "string" },
+        "title": { "type": "string" },
+        "slug": { "type": "string", "unique": true },
+        "content": { "type": "string" },
+        "summary": { "type": "string", "nullable": true },
+        "isPublished": { "type": "boolean" },
+        "likeCount": { "type": "number", "default": 0 },
+        "commentCount": { "type": "number", "default": 0 },
+        "createdAt": { "type": "string" },
+        "updatedAt": { "type": "string" }
+      },
+      "required": ["id", "userId", "title", "slug", "content", "isPublished"]
+    },
+    "Like": {
+      "title": "Like",
+      "type": "object",
+      "description": "Relational link. Constraint: One user per post.",
+      "properties": {
+        "userId": { "type": "string" },
+        "blogId": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    },
+    "Comment": {
+      "title": "Comment",
+      "type": "object",
+      "description": "Post-specific discussion.",
+      "properties": {
+        "id": { "type": "string" },
+        "blogId": { "type": "string" },
+        "userId": { "type": "string" },
+        "authorEmail": { "type": "string" },
+        "content": { "type": "string" },
+        "createdAt": { "type": "string" }
+      }
+    }
+  },
+  "firestore": {
+    "structure": [
+      { "path": "/users/{userId}", "description": "Profile info" },
+      { "path": "/users/{userId}/blogs/{blogId}", "description": "Private draft storage" },
+      { "path": "/public_blogs/{blogId}", "description": "Public read-optimized feed" },
+      { "path": "/public_blogs/{blogId}/comments/{commentId}", "description": "Live comments" },
+      { "path": "/public_blogs/{blogId}/likes/{userId}", "description": "Unique like constraint" }
+    ]
+  }
+}
